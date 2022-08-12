@@ -1,0 +1,2 @@
+When using pickle to load data, please take care to check the block hash before.
+This will ensure that we are loading safe data.
