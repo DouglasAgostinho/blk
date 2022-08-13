@@ -217,7 +217,7 @@ class Signature:
 		hash.update(M.encode())
 		hash.update(str(R).encode())
 		return int(hash.hexdigest(),16); # part 1 of signature
-		pass
+		
 
 	def sign(self, msg):		
 		
@@ -228,7 +228,8 @@ class Signature:
 		
 		k = rand.getrandbits(256)%n; # message nonce
 		self.R = self.G.mul(k); # used to encode
-		e = self.hash(msg, self.R); # part 1 of signature
+		#e = self.hash(msg, self.R); # part 1 of signature
+		e = tools.hash_sig(msg, self.R); # part 1 of signature
 		s=(k-e*d)%n; # part 2 of signature
 
 		return(e, s)
@@ -237,10 +238,11 @@ class Signature:
 	def verify(self, msg, e, s):
 
 		Rv=self.G.mul(s).add(self.Q.mul(e));
-		ev=self.hash(msg,Rv); # check signature 
+		#ev=self.hash(msg,Rv); # check signature 
+		ev=tools.hash_sig(msg,Rv); # check signature 
 
 		if (e==ev):			
-			tools.log(f"\n [Valid Signature] \n e= {e} \nand \n ev= {ev}")
+			tools.log(f"\n [Valid Signature] \n {msg} \n \n e= {e} \nand \n ev= {ev}")
 		else:
 			tools.log(f"\n [Invalid Signature] \n e= {e} \nand \n ev= {ev}")
 
@@ -253,11 +255,15 @@ if __name__ == "__main__":
 
 	test_msg = "hello"
 
-	signed = new_sig.sign(test_msg)	#send message to be signed
+	blk_tx = {"send_add": "Sender Address", "recv_add": "Receiver Address", 
+            "amount": "Amount Tx", "time_stamp": "Time Stamp",
+            "tx_id": "Transaction ID", "tx_sig": "Transaction Signature"}
+
+	signed = new_sig.sign(blk_tx)	#send message to be signed
 	print(signed)
 	
 	#verification process with message and signature received from sign method
-	new_sig.verify(test_msg, signed[0], signed[1]) 
+	new_sig.verify(blk_tx, signed[0], signed[1]) 
 
 
 """
