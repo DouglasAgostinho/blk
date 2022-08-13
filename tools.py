@@ -2,6 +2,7 @@
 
 import pickle
 import hashlib
+import datetime
 
 
 #-------------------- classes --------------------
@@ -9,22 +10,35 @@ import hashlib
 
 #-------------------- functions --------------------
 
+def log(msg):
+    #get message and add to the event log
+    
+    to_log = f"\n {msg} {datetime.datetime.now()}"    
+
+    with open("blk_log.txt", "a") as lf:
+        lf.write(to_log)
+
+
 def hash(msg):
     #handle data to hash, verify message type and return hash value
     
-    if type(msg) == str:
-        print("string")
+    if type(msg) == str:        
         msg = str.encode(msg)
-    elif type(msg) == int:
-        print("int")
+        log(f"[tools -> hash function] - string hash ")        
+
+    elif type(msg) == int:        
         msg = msg.to_bytes(4, byteorder ="big")
-    elif type(msg) == dict:
-        print("dict")
+        log(f"[tools -> hash function] - int hash ")        
+
+    elif type(msg) == dict:        
         msg = pickle.dumps(msg)        
+        log(f"[tools -> hash function] - dict hash ")        
+
     else:
         print("\n Please check your message. \n")
-
+    
     return(hashlib.sha256(msg).hexdigest())
+    
 
 
 #-------------------- main --------------------
