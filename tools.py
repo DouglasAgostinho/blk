@@ -39,7 +39,12 @@ def hash(msg):
     
     return(hashlib.sha256(msg).hexdigest())
     
+def hash_sig(M, R):
 
+		hash = hashlib.sha256()
+		hash.update(pickle.dumps(M))
+		hash.update(str(R).encode())
+		return int(hash.hexdigest(),16); # part 1 of signature
 
 #-------------------- main --------------------
 
