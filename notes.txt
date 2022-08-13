@@ -5,3 +5,6 @@ This will ensure that we are loading safe data.
 
 
 #-------------------- context manager --------------------
+
+
+#-------------------- try except --------------------
