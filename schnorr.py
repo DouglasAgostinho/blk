@@ -3,10 +3,11 @@
 #  This version uses the X,Y,Z "Jacobi coordinates" representation, for speed
 #  Dr. Orion Lawlor, lawlor@alaska.edu, 2015-03-25 (Public Domain)
 
-from hashlib import sha256
+import tools
 from math import log
 from copy import copy
 from time import time # timing
+from hashlib import sha256
 
 #from fractions import gcd # Greatest Common Denominator
 #edited to import from math as gcd was found there
@@ -199,11 +200,9 @@ secp256k1.G=ECpoint(curve=secp256k1,
   z = 1  # projective coordinates, start with Z==1
 );
 
-#class signature and sign and verify methods start here
+#class signature, sign and verify methods start here
 
-class Signature:
-
-	
+class Signature:	
 
 	def __init__(self, sig_key):
 		self.curve = secp256k1
@@ -240,19 +239,25 @@ class Signature:
 		Rv=self.G.mul(s).add(self.Q.mul(e));
 		ev=self.hash(msg,Rv); # check signature 
 
-		if (e==ev):
-			print("Signature valid!")
+		if (e==ev):			
+			tools.log(f"\n [Valid Signature] \n e= {e} \nand \n ev= {ev}")
 		else:
-			print("Signature invalid: R=",self.R," and Rv=",Rv)
+			tools.log(f"\n [Invalid Signature] \n e= {e} \nand \n ev= {ev}")
 
+if __name__ == "__main__":
+	#test function
 
-new_sig = Signature(1)
+	print("\n This is a test program to demonstrate signature process \n")
 
-test_msg = "hello"
-signed = new_sig.sign(test_msg)
-print(signed)
+	new_sig = Signature(1)	#create the signature function with private key = 1
 
-new_sig.verify(test_msg, signed[0], signed[1])
+	test_msg = "hello"
+
+	signed = new_sig.sign(test_msg)	#send message to be signed
+	print(signed)
+	
+	#verification process with message and signature received from sign method
+	new_sig.verify(test_msg, signed[0], signed[1]) 
 
 
 """
