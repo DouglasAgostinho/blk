@@ -9,6 +9,8 @@ from copy import copy
 from time import time # timing
 
 #from fractions import gcd # Greatest Common Denominator
+#edited to import from math as gcd was found there
+
 from math import gcd
 
 
@@ -197,7 +199,65 @@ secp256k1.G=ECpoint(curve=secp256k1,
   z = 1  # projective coordinates, start with Z==1
 );
 
+#class signature and sign and verify methods start here
 
+class Signature:
+
+	
+
+	def __init__(self, sig_key):
+		self.curve = secp256k1
+		self.sig_key = sig_key	
+		self.Q = self.curve.G
+		self.G = self.curve.G
+		self.R = ""
+	
+
+	def hash(self, M, R):
+		hash = sha256()
+		hash.update(M.encode())
+		hash.update(str(R).encode())
+		return int(hash.hexdigest(),16); # part 1 of signature
+		pass
+
+	def sign(self, msg):		
+		
+		
+		n = self.curve.n; # order of curve
+		d = self.sig_key
+		self.Q = self.G.mul(d); # move down curve by x to make public key
+		
+		k = rand.getrandbits(256)%n; # message nonce
+		self.R = self.G.mul(k); # used to encode
+		e = self.hash(msg, self.R); # part 1 of signature
+		s=(k-e*d)%n; # part 2 of signature
+
+		return(e, s)
+
+
+	def verify(self, msg, e, s):
+
+		Rv=self.G.mul(s).add(self.Q.mul(e));
+		ev=self.hash(msg,Rv); # check signature 
+
+		if (e==ev):
+			print("Signature valid!")
+		else:
+			print("Signature invalid: R=",self.R," and Rv=",Rv)
+
+
+new_sig = Signature(1)
+
+test_msg = "hello"
+signed = new_sig.sign(test_msg)
+print(signed)
+
+new_sig.verify(test_msg, signed[0], signed[1])
+
+
+"""
+#original test program turned to comment
+#file updated with function to be imported 
 #################
 # Test program:
 curve=secp256k1
@@ -244,3 +304,4 @@ else:
 
 print("schnorr elapsed=",time()-start," seconds")
 
+"""
