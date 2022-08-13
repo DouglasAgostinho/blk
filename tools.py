@@ -1,5 +1,6 @@
 #-------------------- imports --------------------
 
+import pickle
 import hashlib
 
 
@@ -17,6 +18,9 @@ def hash(msg):
     elif type(msg) == int:
         print("int")
         msg = msg.to_bytes(4, byteorder ="big")
+    elif type(msg) == dict:
+        print("dict")
+        msg = pickle.dumps(msg)        
     else:
         print("\n Please check your message. \n")
 
