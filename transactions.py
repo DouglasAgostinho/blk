@@ -1,11 +1,12 @@
 #-------------------- imports --------------------
-from hashlib import new
-import datetime
+
 import tools
+import datetime
+import schnorr
 
 #-------------------- variables --------------------
 
-#block tx model
+#       block tx model
 #
 # blk_tx = {"send_add": "Sender Address", "recv_add": "Receiver Address", 
 #             "amount": "Amount Tx", "time_stamp": "Time Stamp",
@@ -14,15 +15,17 @@ import tools
 
 #-------------------- class --------------------
 
-class Transaction:
+class Transaction:    
         
-    def __init__(self, send_add, recv_add, amount):
+    def __init__(self):        
+        self.time = str(datetime.datetime.now())
+        self.signature = schnorr.Signature(1)
+
+    def new_tx(self, send_add, recv_add, amount):
         self.send_add = send_add
         self.recv_add = recv_add
         self.amount = amount
-        self.time = str(datetime.datetime.now())
 
-    def new_tx(self):
         initial_tx = {"send_add": self.send_add, "recv_add": self.recv_add, 
             "amount": self.amount, "time_stamp": self.time}
         
@@ -30,10 +33,26 @@ class Transaction:
 
         new_tx = {"send_add": self.send_add, "recv_add": self.recv_add, 
             "amount": self.amount, "time_stamp": self.time, "tx_id": tx_id}
+
+        tx_signature = self.signature.sign(new_tx)
+
+        signed_tx = {"send_add": self.send_add, "recv_add": self.recv_add, 
+            "amount": self.amount, "time_stamp": self.time, "tx_id": tx_id,
+            "tx_sig": tx_signature}
         
         tools.log("[Transactions -> new_tx] - New transaction created")
-        return(new_tx)
+        return(signed_tx)
 
+    def check_tx(self, tx):
+
+        msg = {"send_add": tx["send_add"], "recv_add": tx["recv_add"], 
+             "amount": tx["amount"], "time_stamp": tx["time_stamp"], "tx_id": tx["tx_id"]}
+
+        msg_sig = tx["tx_sig"]       
+
+        self.signature.verify(msg, msg_sig[0], msg_sig[1])
+
+            
 #-------------------- main --------------------
 
 def test_main():
@@ -43,9 +62,16 @@ def test_main():
 
     
 
-    for i in range(3):
-        tx = Transaction(i*10, i*20, i)
-        print(tx.new_tx())
+    for i in range(1):
+        tx = Transaction()
+
+        tx_created = tx.new_tx(i*10, i*20, i)
+        #print(tx_created)
+        tx.check_tx(tx_created)
+
+        
+
+        
 
     
 
