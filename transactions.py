@@ -19,7 +19,7 @@ class Transaction:
         
     def __init__(self):        
         self.time = str(datetime.datetime.now())
-        self.signature = schnorr.Signature(1)
+        self.signature = schnorr.Signature()
 
     def new_tx(self, send_add, recv_add, amount):
         self.send_add = send_add
