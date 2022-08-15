@@ -4,10 +4,12 @@
 #  Dr. Orion Lawlor, lawlor@alaska.edu, 2015-03-25 (Public Domain)
 
 import tools
-from math import log
+import pickle
+from math import log, pi
 from copy import copy
 from time import time # timing
 from hashlib import sha256
+from secrets import randbelow as rand_sec #for private and public key generation
 
 #from fractions import gcd # Greatest Common Denominator
 #edited to import from math as gcd was found there
@@ -204,41 +206,57 @@ secp256k1.G=ECpoint(curve=secp256k1,
 
 class Signature:	
 
-	def __init__(self, sig_key):
-		self.curve = secp256k1
-		self.sig_key = sig_key	
+	def __init__(self):
+		self.curve = secp256k1		
 		self.Q = self.curve.G
 		self.G = self.curve.G
 		self.R = ""
-	
+		self.gen_pk()
+			
+	def gen_pk(self):
+		
+		self.sig_key = rand_sec(99999999999999999999999999999999999999999999999999)	
 
-	def hash(self, M, R):
-		hash = sha256()
-		hash.update(M.encode())
-		hash.update(str(R).encode())
-		return int(hash.hexdigest(),16); # part 1 of signature
-		
+		for i in range(rand_sec(999)):
+			self.sig_key = self.sig_key * int(time())
+			self.sig_key = self.sig_key * rand_sec(99999999999999999999999999999999999999999999999999)			
+			
 
-	def sign(self, msg):		
+		self.Q = self.G.mul(self.sig_key) # move down curve by x to make public key
+		print(self.Q)
+
+		with open("pvk.txt", "wb") as lf:
+			lf.write(pickle.dumps(self.sig_key))
+    	
+		with open("pbk.txt", "wb") as lf:
+			lf.write(pickle.dumps(self.Q))
+
+	def sign(self, msg):	
+
+		with open("pvk.txt", "rb") as lf:
+				#pbk = pickle.loads(lf.read())
+				content = lf.read()
+				pvk =  pickle.loads(content)			
 		
-		
-		n = self.curve.n; # order of curve
-		d = self.sig_key
-		self.Q = self.G.mul(d); # move down curve by x to make public key
-		
+		n = self.curve.n; # order of curve						
 		k = rand.getrandbits(256)%n; # message nonce
 		self.R = self.G.mul(k); # used to encode
 		#e = self.hash(msg, self.R); # part 1 of signature
 		e = tools.hash_sig(msg, self.R); # part 1 of signature
-		s=(k-e*d)%n; # part 2 of signature
+		s=(k-e*pvk)%n; # part 2 of signature
 
 		return(e, s)
 
 
-	def verify(self, msg, e, s):
+	def verify(self, msg, e, s, pbk = None):
 
-		Rv=self.G.mul(s).add(self.Q.mul(e));
-		#ev=self.hash(msg,Rv); # check signature 
+		if pbk == None:
+			with open("pbk.txt", "rb") as lf:
+				#pbk = pickle.loads(lf.read())
+				content = lf.read()
+				pbk =  pickle.loads(content)				
+		
+		Rv=self.G.mul(s).add(pbk.mul(e));		
 		ev=tools.hash_sig(msg,Rv); # check signature 
 
 		if (e==ev):			
@@ -251,7 +269,7 @@ if __name__ == "__main__":
 
 	print("\n This is a test program to demonstrate signature process \n")
 
-	new_sig = Signature(1)	#create the signature function with private key = 1
+	new_sig = Signature()	#create the signature function with private key = 1
 
 	test_msg = "hello"
 
@@ -264,55 +282,3 @@ if __name__ == "__main__":
 	
 	#verification process with message and signature received from sign method
 	new_sig.verify(blk_tx, signed[0], signed[1]) 
-
-
-"""
-#original test program turned to comment
-#file updated with function to be imported 
-#################
-# Test program:
-curve=secp256k1
-
-Q=curve.G
-print("Generator touches curve? ",curve.touches(Q));
-print("Curve order times generator: ",curve.mul(curve.n,Q));
-
-start=time()
-
-# Hash the message M and the curve point R
-#  (this isn't any offical scheme, but a simple ASCII concatenation)
-def hashThis(M,C):
-	hash=sha256()
-	hash.update(M.encode())
-	hash.update(str(R).encode())
-	return int(hash.hexdigest(),16); # part 1 of signature
-
-# Make signing key
-G=curve.G; # generator of curve
-n=curve.n; # order of curve
-d=rand.getrandbits(256)%n # secret key
-Q=G.mul(d); # move down curve by x to make public key
-
-# Schnorr signature process: 
-#   uses message and secret key x
-M="I am a fish"; # message
-k=rand.getrandbits(256)%n; # message nonce
-R=G.mul(k); # used to encode
-e=hashThis(M,R); # part 1 of signature
-s=(k-e*d)%n; # part 2 of signature
-
-print("Signature (e,s)=",e,",",s)
-
-# Verification procss: 
-#   uses message, public key Y, signature e, s
-Rv=G.mul(s).add(Q.mul(e));
-ev=hashThis(M,Rv); # check signature 
-
-if (e==ev):
-	print("Signature valid!")
-else:
-	print("Signature invalid: R=",R," and Rv=",Rv)
-
-print("schnorr elapsed=",time()-start," seconds")
-
-"""
