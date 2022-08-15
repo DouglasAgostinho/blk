@@ -3,6 +3,7 @@
 import pickle
 import hashlib
 import datetime
+from secrets import randbelow as rand_sec
 
 
 #-------------------- classes --------------------
@@ -44,12 +45,13 @@ def hash_sig(M, R):
 		hash = hashlib.sha256()
 		hash.update(pickle.dumps(M))
 		hash.update(str(R).encode())
-		return int(hash.hexdigest(),16); # part 1 of signature
+		return int(hash.hexdigest(),16)
+
 
 #-------------------- main --------------------
 
 def test_main():
-    #function created for test purposes
+    #function created for test purposes    
     pass
 
 
