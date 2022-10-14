@@ -1,5 +1,17 @@
+import time
+import block
 from tkinter import *
 from tkinter import ttk
+import transactions as tx
+from concurrent.futures import ThreadPoolExecutor 
+
+#-------------------- Global --------------------
+
+mem_pool = [{"send_add": "Sender Address", "recv_add": "Receiver Address", 
+             "amount": "Amount Tx", "time_stamp": "Time Stamp",
+             "tx_id": "Transaction ID", "tx_sig": "Transaction Signature"},]
+
+new_tx = tx.Transaction()
 
 class Scr1:
 
@@ -35,15 +47,40 @@ class Scr1:
         self.amnt_entry.delete(0, END)
 
     def tx(self):
-        print(f"You are sending {self.amnt_entry.get()} to {self.recv_entry.get()}")
+        #print(f"You are sending {self.amnt_entry.get()} to {self.recv_entry.get()}")
+        signed_tx = new_tx.new_tx(self.send_entry.get(), self.recv_entry.get(), self.amnt_entry.get()) 
+        mem_pool.append(signed_tx)
+        #print(signed_tx)
 
 
+def tx_to_block():
+    
+    mem_text = Text(tab2, height = 35, width = 95)
+    mem_label = Label(tab2, text = "Mem Pool")
+
+    #mem_label.grid(row = 10, column = 10)
+    mem_text.grid(row = 11, column = 0)
+    print("test")
+    result = (False, 0)
+    print(result)
+    while True:
+        mem_text.delete(1.0, END) 
+        for item in mem_pool:       
+            mem_text.insert(END, item)
+            mem_text.insert(END, "\n\n")
+        time.sleep(1)
+        if len(mem_pool) > 4 and result[1] == 0:
+            print("bigger")
+            result = block.mnr(mem_pool)            
+        else:
+            print("Not ready")
+            result = (False, 0)
 
 
 root = Tk()
 
 root.title("Le chain")
-root.geometry("400x300")
+root.geometry("800x600")
 
 tabControl = ttk.Notebook(root)
 
@@ -58,4 +95,10 @@ new_scr = Scr1(tab1)
 
 new_scr.plot()
 
-root.mainloop()
+win = Toplevel(root)
+
+with ThreadPoolExecutor(max_workers = 3) as tpe:
+
+    fut_loop_01 = tpe.submit(tx_to_block)
+
+    root.mainloop()
