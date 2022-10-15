@@ -69,13 +69,14 @@ def tx_to_block():
             mem_text.insert(END, item)
             mem_text.insert(END, "\n\n")
         time.sleep(1)
-        if len(mem_pool) > 4 and result[1] == 0:
+        if len(mem_pool) > 0 and result[1] == 0:
             print("bigger")
-            result = block.mnr(mem_pool)            
+            result = block.mnr(mem_pool)
+            break            
         else:
             print("Not ready")
             result = (False, 0)
-
+    block.block_validadte()
 
 root = Tk()
 
