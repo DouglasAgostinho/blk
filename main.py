@@ -11,7 +11,27 @@ mem_pool = [{"send_add": "Sender Address", "recv_add": "Receiver Address",
              "amount": "Amount Tx", "time_stamp": "Time Stamp",
              "tx_id": "Transaction ID", "tx_sig": "Transaction Signature"},]
 
+
+
 new_tx = tx.Transaction()
+
+def update_pool(updt_pool):
+    #print("updating pool")
+    #print(updt_pool)
+    print(f" Memory pool before {mem_pool}")
+    for item in updt_pool:
+        
+        #print(f" item is {item}")
+        for i in mem_pool:
+            #print(f"item is {item} and mem_pool[i] is {i}")
+            
+            print(mem_pool)
+            if i == item:
+                mem_pool.remove(item)
+            
+    print(f" Memory pool after {mem_pool}")
+
+    tx_to_block()
 
 class Scr1:
 
@@ -71,12 +91,13 @@ def tx_to_block():
         time.sleep(1)
         if len(mem_pool) > 0 and result[1] == 0:
             print("bigger")
-            result = block.mnr(mem_pool)
+            result, blk_name = block.mnr(mem_pool)
             break            
         else:
             print("Not ready")
             result = (False, 0)
-    block.block_validadte()
+    update_pool(block.block_validate(blk_name))
+    
 
 root = Tk()
 

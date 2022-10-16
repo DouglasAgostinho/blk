@@ -13,32 +13,50 @@ PATH = r"C:\Users\iceli\OneDrive\Documentos\python\blk\data\\"
 blk_hd = {"version": "0000", "prev_hx": "0xabc", "nonce": 0}
 blk_ft = {"m_add": "0xabc", "hd_hx": "0xabc", "tx_hx": "0xabc"}
 
-blk_list = []
+
 tx_list = []
 
 hx_list = []
 
 hx_cmp = "000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
-def block_find(name, path):
+def block_find(path):
+    blk_list = []
     for root, dirs, files in os.walk(path):
-        blk_list.append(os.path.join(name))
+        for file in files:
+            #blk_list.append(os.path.join(file))
+            blk_list.append(file)
+    return(blk_list)
+    
         
 
 
-def block_pack(blk):   
-    
-    with open(f"{PATH}blk_0.txt", "wb") as lf:
-        print("file opened")
-        print(f"{PATH}blk_0.txt")     
-        print(blk)
+def block_pack(blk):  
 
+    b_list = block_find(PATH) 
+    blk_name = "0_blk.txt"
+    
+    i = 0
+    
+    for i in range(len(b_list)):
+
+        if (f"{i}_blk.txt") in b_list:
+            i += 1
+
+    blk_name = f"{i}_blk.txt"
+    
+    print(f"{PATH}{blk_name}")
+
+    with open(f"{PATH}{blk_name}", "wb") as lf:
+        
         lf.write(pickle.dumps(blk))
     
+    return(blk_name)
+    
 
-def block_validadte():
+def block_validate(blk_name):
 
-    with open(f"{PATH}blk_0.txt", "rb") as f:
+    with open(f"{PATH}{blk_name}", "rb") as f:
         blk = pickle.loads(f.read())
 
     hx_dict = json.dumps(blk, indent=2).encode("utf-8")    
@@ -47,6 +65,7 @@ def block_validadte():
 
     if hx_res < hx_cmp:
         print("Valid BLock")
+        return(blk[1])
     else:
         print("Invalid block")
 
@@ -77,7 +96,7 @@ def mnr(mem_pool):
             print(hx_list)
             print(time.time() - st_time)
             result = (True, blk_hd["nonce"])
-            block_pack(blk)
+            blk_name = block_pack(blk)
             break
             
         else:
@@ -85,7 +104,7 @@ def mnr(mem_pool):
             blk_hd["nonce"] += 1
             print(blk_hd["nonce"])
                 
-    return(result)
+    return(result, blk_name)
 
 
 
