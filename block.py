@@ -2,9 +2,11 @@
 import os
 import time
 import json
+import tools
 import pickle
 import hashlib
 import datetime
+from tkinter import Pack
 
 #------------------------------ constants ------------------------------
 PATH = r"C:\Users\iceli\OneDrive\Documentos\python\blk\data\\"
@@ -13,14 +15,16 @@ PATH = r"C:\Users\iceli\OneDrive\Documentos\python\blk\data\\"
 blk_hd = {"version": "0000", "prev_hx": "0xabc", "nonce": 0}
 blk_ft = {"m_add": "0xabc", "hd_hx": "0xabc", "tx_hx": "0xabc"}
 
+last_block_hx = "0xabc"
 
 tx_list = []
 
 hx_list = []
 
-hx_cmp = "000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+hx_cmp = "0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 def block_find(path):
+    
     blk_list = []
     for root, dirs, files in os.walk(path):
         for file in files:
@@ -28,8 +32,29 @@ def block_find(path):
             blk_list.append(file)
     return(blk_list)
     
-        
 
+def block_hx_ctrl():
+    global last_block_hx
+
+    blocks = block_find(PATH)
+    hx_blocks = []
+    for block in blocks:
+         with open(f"{PATH}{block}", "rb") as fb:
+            blk = pickle.loads(fb.read())
+            hx_dict = json.dumps(blk, indent=2).encode("utf-8")    
+
+            hx_res = hashlib.sha256(hx_dict).hexdigest()
+            hx_blocks.append(hx_res)
+
+    with open("block_hx_control.txt", "r") as bf:
+        lines = bf.read().split()
+        for line in lines:
+            if line in hx_blocks:
+                last_block_hx = line
+            else:
+                print(f"missing hash {line}")           
+            
+                   
 
 def block_pack(blk):  
 
@@ -70,10 +95,12 @@ def block_validate(blk_name):
         print("Invalid block")
 
 def blk_bytes(mem_pool):
+    global last_block_hx
+
+    blk_hd["prev_hx"] = last_block_hx
     
     blk = [blk_hd, mem_pool, blk_ft, hx_cmp]
-    print(blk)
-    
+        
     hx_dict = json.dumps(blk, indent=2).encode("utf-8")
         
     return(hashlib.sha256(hx_dict).hexdigest(), blk)
@@ -82,7 +109,8 @@ def blk_bytes(mem_pool):
 def mnr(mem_pool):
 
     st_time = time.time()
-                       
+
+    global last_block_hx  
     while True:        
         
         hx_res, blk = blk_bytes(mem_pool)
@@ -96,13 +124,18 @@ def mnr(mem_pool):
             print(hx_list)
             print(time.time() - st_time)
             result = (True, blk_hd["nonce"])
+            last_block_hx = hx_res
+            with open("block_hx_control.txt", "a") as bhc:
+                
+                bhc.write(f"{last_block_hx} \n")
+
             blk_name = block_pack(blk)
             break
             
         else:
-            print("higher")
+            #print("higher")
             blk_hd["nonce"] += 1
-            print(blk_hd["nonce"])
+            #print(blk_hd["nonce"])
                 
     return(result, blk_name)
 

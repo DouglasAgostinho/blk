@@ -1,4 +1,5 @@
 import time
+import init
 import block
 from tkinter import *
 from tkinter import ttk
@@ -118,6 +119,8 @@ new_scr = Scr1(tab1)
 new_scr.plot()
 
 win = Toplevel(root)
+
+init.intialization()
 
 with ThreadPoolExecutor(max_workers = 3) as tpe:
 
