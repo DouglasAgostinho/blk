@@ -1,5 +1,6 @@
 #------------------------------ imports ------------------------------
 import os
+import platform
 import time
 import json
 import tools
@@ -9,7 +10,12 @@ import datetime
 from tkinter import Pack
 
 #------------------------------ constants ------------------------------
-PATH = r"C:\Users\iceli\OneDrive\Documentos\python\blk\data\\"
+OS_NAME = platform.system()
+
+if OS_NAME.lower() == "linux":
+    PATH = r"/home/ice/Documents/python/blk/data/"
+else:
+    PATH = r"C:\Users\iceli\OneDrive\Documentos\python\blk\data\\"
 #------------------------------ variables ------------------------------
 
 blk_hd = {"version": "0000", "prev_hx": "0xabc", "nonce": 0}
