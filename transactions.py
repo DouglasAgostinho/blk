@@ -16,12 +16,17 @@ import schnorr
 #-------------------- class --------------------
 
 class Transaction:    
-        
+    # Class with all methods to create, validate and sign transaction (tx)
+
     def __init__(self):        
+        # Main variables
+
         self.time = str(datetime.datetime.now())
         self.signature = schnorr.Signature()
 
     def new_tx(self, send_add, recv_add, amount):
+        # New transaction creation
+
         self.send_add = send_add
         self.recv_add = recv_add
         self.amount = amount
@@ -43,7 +48,9 @@ class Transaction:
         tools.log("[Transactions -> new_tx] - New transaction created")
         return(signed_tx)
 
+
     def check_tx(self, tx):
+        # Verify transactions
 
         msg = {"send_add": tx["send_add"], "recv_add": tx["recv_add"], 
              "amount": tx["amount"], "time_stamp": tx["time_stamp"], "tx_id": tx["tx_id"]}
@@ -60,25 +67,16 @@ def test_main():
 
     print("\n Test routine started \n")
 
-    
-
     for i in range(1):
         tx = Transaction()
 
         tx_created = tx.new_tx(i*10, i*20, i)
-        #print(tx_created)
         tx.check_tx(tx_created)
-
-        
-
-        
-
     
-
     print("\n Test routine ended \n")
+
 
 if __name__ == "__main__":   
 
-    #print("\n just testing for now \n")
     test_main()
     

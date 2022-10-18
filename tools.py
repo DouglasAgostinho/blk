@@ -5,9 +5,7 @@ import hashlib
 import datetime
 from secrets import randbelow as rand_sec
 
-
 #-------------------- classes --------------------
-
 
 #-------------------- functions --------------------
 
