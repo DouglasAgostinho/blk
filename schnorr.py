@@ -3,6 +3,8 @@
 #  This version uses the X,Y,Z "Jacobi coordinates" representation, for speed
 #  Dr. Orion Lawlor, lawlor@alaska.edu, 2015-03-25 (Public Domain)
 
+#-------------------- imports --------------------
+
 import tools
 import pickle
 from math import log, pi
@@ -11,8 +13,8 @@ from time import time # timing
 from hashlib import sha256
 from secrets import randbelow as rand_sec #for private and public key generation
 
-#from fractions import gcd # Greatest Common Denominator
-#edited to import from math as gcd was found there
+# from fractions import gcd # Greatest Common Denominator (updated)
+# edited to import from math as gcd was found there
 
 from math import gcd
 
@@ -20,7 +22,10 @@ from math import gcd
 from random import SystemRandom # cryptographic random byte generator
 rand=SystemRandom() # create strong random number generator
 
+#-------------------- Functions and Classes Definition --------------------
+
 # Convert a string with hex digits, colons, and whitespace to a long integer
+
 def hex2int(hexString):
 	return int("".join(hexString.replace(":","").split()),16)
 
@@ -28,6 +33,7 @@ def hex2int(hexString):
 #    Computes   gcd(a,b) = a*x + b*y  
 #    Returns only gcd, x (not y)
 # From http://rosettacode.org/wiki/Modular_inverse#Python
+
 def half_extended_gcd(aa, bb):
 	lastrem, rem = abs(aa), abs(bb)
 	x, lastx = 0, 1
@@ -38,6 +44,7 @@ def half_extended_gcd(aa, bb):
 
 # Modular inverse: compute the multiplicative inverse i of a mod m:
 #     i*a = a*i = 1 mod m
+
 def modular_inverse(a, m):
 	g, x = half_extended_gcd(a, m)
 	if g != 1:
@@ -51,6 +58,7 @@ def modular_inverse(a, m):
 #   b: constant part of curve
 #   G: a curve point (G.x,G.y) used as a "generator"
 #   n: the order of the generator
+
 class ECcurve:
 	def __init__(self):
 		return
@@ -189,18 +197,18 @@ class ECpoint:
 # This is the BitCoin elliptic curve, SECG secp256k1
 #   See http://www.secg.org/SEC2-Ver-1.0.pdf
 secp256k1=ECcurve()
-secp256k1.p=hex2int("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F");
+secp256k1.p=hex2int("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F")
 secp256k1.a=0 # it's a Koblitz curve, with no linear part
 secp256k1.b=7 
 # n is the order of the curve, used for ECDSA
-secp256k1.n=hex2int("FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141");
+secp256k1.n=hex2int("FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFE BAAEDCE6 AF48A03B BFD25E8C D0364141")
 
 # SEC's "04" means they're representing the generator point's X,Y parts explicitly.
 secp256k1.G=ECpoint(curve=secp256k1,
   x = hex2int("79BE667E F9DCBBAC 55A06295 CE870B07 029BFCDB 2DCE28D9 59F2815B 16F81798"),
   y = hex2int("483ADA77 26A3C465 5DA4FBFC 0E1108A8 FD17B448 A6855419 9C47D08F FB10D4B8"),
   z = 1  # projective coordinates, start with Z==1
-);
+)
 
 #class signature, sign and verify methods start here
 
@@ -238,12 +246,12 @@ class Signature:
 				content = lf.read()
 				pvk =  pickle.loads(content)			
 		
-		n = self.curve.n; # order of curve						
-		k = rand.getrandbits(256)%n; # message nonce
-		self.R = self.G.mul(k); # used to encode
+		n = self.curve.n # order of curve						
+		k = rand.getrandbits(256)%n # message nonce
+		self.R = self.G.mul(k) # used to encode
 		#e = self.hash(msg, self.R); # part 1 of signature
-		e = tools.hash_sig(msg, self.R); # part 1 of signature
-		s=(k-e*pvk)%n; # part 2 of signature
+		e = tools.hash_sig(msg, self.R) # part 1 of signature
+		s=(k-e*pvk)%n # part 2 of signature
 
 		return(e, s)
 
@@ -256,8 +264,8 @@ class Signature:
 				content = lf.read()
 				pbk =  pickle.loads(content)				
 		
-		Rv=self.G.mul(s).add(pbk.mul(e));		
-		ev=tools.hash_sig(msg,Rv); # check signature 
+		Rv=self.G.mul(s).add(pbk.mul(e))		
+		ev=tools.hash_sig(msg,Rv) # check signature 
 
 		if (e==ev):			
 			tools.log(f"\n [Valid Signature] \n {msg} \n \n e= {e} \nand \n ev= {ev}")
