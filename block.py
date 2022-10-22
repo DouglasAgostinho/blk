@@ -40,6 +40,11 @@ def block_find(path):
     for root, dirs, files in os.walk(path):
         for file in files:
             blk_list.append(file)
+            #print(file)
+            #print(sorted(files))
+        
+        blk_list = sorted(blk_list, key=lambda x: int(x.split('_')[0]))
+        
     return(blk_list)
     
 
@@ -56,6 +61,7 @@ def block_hx_ctrl():
             hx_dict = json.dumps(blk, indent=2).encode("utf-8")    
             hx_res = hashlib.sha256(hx_dict).hexdigest()
             hx_blocks.append(hx_res)
+            print(block, hx_res)
 
     with open("block_hx_control.txt", "r") as bf:
         lines = bf.read().split()
@@ -143,4 +149,4 @@ def mnr(mem_pool):
 
 
 if __name__ == "__main__":
-    pass
+    block_find(PATH)
