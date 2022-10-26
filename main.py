@@ -16,6 +16,8 @@ mem_pool = [{"send_add": "Sender Address", "recv_add": "Receiver Address",
              "tx_id": "Transaction ID", "tx_sig": "Transaction Signature"},]
 
 
+hx_list = []
+
 #-------------------- Functions and Classes Definition --------------------
 
 # Create a new object Transaction - to create / sign & validate transactions (tx)
@@ -80,6 +82,34 @@ class Scr1:
         mem_pool.append(signed_tx)
         
 
+
+def mnr():
+    # Block "mined" by increase the nonce until it reaches the difficulty
+
+    global mem_pool
+    #st_time = time.time()
+        
+    while True:            
+        hx_res, blk = block.blk_bytes(mem_pool)
+        
+        if hx_res < block.hx_cmp:    
+            hx_list.append(hx_res)
+            hx_list.append(block.blk_hd["nonce"])
+            result = (True, block.blk_hd["nonce"])
+            block.last_block_hx = hx_res
+
+            with open("block_hx_control.txt", "a") as bhc:    
+                bhc.write(f"{block.last_block_hx} \n")
+
+            blk_name = block.block_pack(blk)
+            break
+            
+        else:
+            block.blk_hd["nonce"] += 1
+                
+    return(result, blk_name)
+
+
 def tx_to_block():
     # Main function that defines if the MemPool is ready
     # If ready it initiate the block creation
@@ -104,8 +134,8 @@ def tx_to_block():
 
         # If one valid transaction is in memory pool initiate block creation
         if len(mem_pool) > 0 and result[1] == 0:
-            print("bigger")
-            result, blk_name = block.mnr(mem_pool)
+            #print("bigger")
+            result, blk_name = mnr()
             break   
 
         # If not, continue
@@ -116,7 +146,7 @@ def tx_to_block():
     # Use the return of block validation function as input for 
     # mem pool update
     update_pool(block.block_validate(blk_name))
-    
+ 
 
 #-------------------- Program begin --------------------
 

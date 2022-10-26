@@ -25,12 +25,18 @@ blk_hd = {"version": "0000", "prev_hx": "0xabc", "nonce": 0}
 blk_ft = {"m_add": "0xabc", "hd_hx": "0xabc", "tx_hx": "0xabc"}
 last_block_hx = "0xabc"
 tx_list = []
-hx_list = []
+
 
 # Chain difficulty
-hx_cmp = "0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+hx_cmp = "000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 #------------------------------ Functions and Classes definition ------------------------------
+
+def block_read(block):
+
+    with open(f"{PATH}{block}", "rb") as fb:
+            print(pickle.loads(fb.read()))
+            
 
 def block_find(path):
     # Search in the PATH for blocks stored
@@ -120,11 +126,11 @@ def blk_bytes(mem_pool):
         
     return(hashlib.sha256(hx_dict).hexdigest(), blk)
 
-
+"""
 def mnr(mem_pool):
     # Block "mined" by increase the nonce until it reaches the difficulty
 
-    st_time = time.time()
+    #st_time = time.time()
     global last_block_hx 
 
     while True:            
@@ -147,6 +153,8 @@ def mnr(mem_pool):
                 
     return(result, blk_name)
 
+"""
 
 if __name__ == "__main__":
     block_find(PATH)
+    block_read(input("insert block name: "))
