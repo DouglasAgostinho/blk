@@ -28,7 +28,7 @@ tx_list = []
 
 
 # Chain difficulty
-hx_cmp = "000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+hx_cmp = "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 #------------------------------ Functions and Classes definition ------------------------------
 

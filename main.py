@@ -26,6 +26,7 @@ new_tx = tx.Transaction()
 
 def update_pool(updt_pool):
     # Receive a valid block and remove from the mem pool the transactions published in it 
+    global mem_pool
 
     for item in updt_pool:
         for i in mem_pool:            
@@ -36,25 +37,50 @@ def update_pool(updt_pool):
     tx_to_block()
 
 
-class Scr1:
+class Scr:
     # class for the Screen objects (Main windows initially)
+    global mem_pool
 
-    def __init__(self, master):
+    def __init__(self):
         # Class initialization(main variables definiton)
 
-        self.send_label = Label(master, text = "Sender Address")
-        self.recv_label = Label(master, text = "Receiver Address")
-        self.amnt_label = Label(master, text = "Amount")
+        # Initial declaration for program windows
 
-        self.send_entry = Entry(master, width = "20")
-        self.recv_entry = Entry(master, width = "20")
-        self.amnt_entry = Entry(master, width = "20")
+        self.root = Tk()
+        self.root.title("Le chain")
+        self.root.geometry("800x600")
 
-        self.send_button = Button(master, text = "Send", command = self.tx)
-        self.clear_button = Button(master, text = "Clear", command = self.clr_fields)
+        #Initial declaration for windows Tabs
+
+        self.tabControl = ttk.Notebook(self.root)
+        self.tab1 = ttk.Frame(self.tabControl)
+        self.tab2 = ttk.Frame(self.tabControl)
+        self.tabControl.add(self.tab1, text = "Transactions")
+        self.tabControl.add(self.tab2, text = "Mem Pool")
+        
+
+        self.mem_text = Text(self.tab2, height = 35, width = 95)
+        self.mem_label = Label(self.tab2, text = "Mem Pool")
+        
+
+        self.send_label = Label(self.tab1, text = "Sender Address")
+        self.recv_label = Label(self.tab1, text = "Receiver Address")
+        self.amnt_label = Label(self.tab1, text = "Amount")
+
+        self.send_entry = Entry(self.tab1, width = "20")
+        self.recv_entry = Entry(self.tab1, width = "20")
+        self.amnt_entry = Entry(self.tab1, width = "20")
+
+        self.send_button = Button(self.tab1, text = "Send", command = self.tx)
+        self.clear_button = Button(self.tab1, text = "Clear", command = self.clr_fields)
+
 
     def plot(self):
         # Configure how the window will be displayed
+
+        self.tabControl.pack(expand = 1, fill = "both")
+        
+        self.mem_text.grid(row = 11, column = 0)   
 
         self.send_label.grid(row=0, column=0)
         self.send_entry.grid(row=0, column=1)
@@ -67,6 +93,26 @@ class Scr1:
 
         self.clear_button.grid(row=4, column=0)
         self.send_button.grid(row=4, column=1)    
+        
+        # Windows on top of main screen for program updates.
+        self.win = Toplevel(self.root)
+
+        self.update_mem_pool()
+
+        self.root.mainloop()
+
+    def update_mem_pool(self):
+        # Loop to monitor MemPool size
+        
+        self.mem_text.delete(1.0, END) 
+
+        # Display the items in memory pool in the second tab
+        for item in mem_pool:       
+            self.mem_text.insert(END, item)
+            self.mem_text.insert(END, "\n\n")
+        
+        self.root.after(1000, self.update_mem_pool)
+        
 
     def clr_fields(self):
         # Clean the entry fields
@@ -80,6 +126,7 @@ class Scr1:
         
         signed_tx = new_tx.new_tx(self.send_entry.get(), self.recv_entry.get(), self.amnt_entry.get()) 
         mem_pool.append(signed_tx)
+        print("add")
         
 
 
@@ -106,6 +153,8 @@ def mnr():
             
         else:
             block.blk_hd["nonce"] += 1
+            to_print = block.blk_hd["nonce"]
+            print(f"nonce is: {to_print}")
                 
     return(result, blk_name)
 
@@ -114,73 +163,46 @@ def tx_to_block():
     # Main function that defines if the MemPool is ready
     # If ready it initiate the block creation
 
-    mem_text = Text(tab2, height = 35, width = 95)
-    mem_label = Label(tab2, text = "Mem Pool")
-    mem_text.grid(row = 11, column = 0)
-
     result = (False, 0)
     
     while True:
         # Loop to monitor MemPool size
 
-        mem_text.delete(1.0, END) 
-
-        # Display the items in memory pool in the second tab
-        for item in mem_pool:       
-            mem_text.insert(END, item)
-            mem_text.insert(END, "\n\n")
-        
-        time.sleep(1)
-
         # If one valid transaction is in memory pool initiate block creation
-        if len(mem_pool) > 0 and result[1] == 0:
+        if len(mem_pool) > 4 and result[1] == 0:
             #print("bigger")
             result, blk_name = mnr()
             break   
 
         # If not, continue
         else:
-            print("Not ready")
+            #print("Not ready")
             result = (False, 0)
 
     # Use the return of block validation function as input for 
     # mem pool update
     update_pool(block.block_validate(blk_name))
- 
+
+
+def aux_functions():
+    # Initializing screen
+    
+    new_scr = Scr()
+    new_scr.plot()
+    #new_scr.update_mem_pool()
+    
 
 #-------------------- Program begin --------------------
 
-# Initial declaration for program windows
-
-root = Tk()
-root.title("Le chain")
-root.geometry("800x600")
-
-#Initial declaration for windows Tabs
-
-tabControl = ttk.Notebook(root)
-tab1 = ttk.Frame(tabControl)
-tab2 = ttk.Frame(tabControl)
-
-tabControl.add(tab1, text = "Transactions")
-tabControl.add(tab2, text = "Mem Pool")
-tabControl.pack(expand = 1, fill = "both")
-
-# Initializing screen
-
-new_scr = Scr1(tab1)
-new_scr.plot()
-
-# Windows on top of main screen for program updates.
-win = Toplevel(root)
-
 # System routines and auxiliaries initialization
 init.intialization()
+
 
 # Thread handler initialization
 with ThreadPoolExecutor(max_workers = 3) as tpe:
 
     # initialize the memory pool monitoring as a new Thread
     fut_loop_01 = tpe.submit(tx_to_block)
+    fut_loop_02 = tpe.submit(aux_functions)
 
-    root.mainloop()
+    
